@@ -1,0 +1,11 @@
+http:
+  port: "8081"
+  
+sftp:
+  env: "loc"
+  host: "sftp.px.bylinkr.com"
+  port: "8422"
+  user: "linkr"
+  password: "linkr2026"
+  wd : "upload/theu"
+  

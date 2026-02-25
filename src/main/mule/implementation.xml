@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="GetInvoices" doc:id="c8cc8586-1175-48dd-9652-3be7686019cc" >
+		<flow-ref doc:name="SetupParameters" doc:id="99f002e7-a3fd-4e69-94b7-cb0504d94764" name="SetupParameters"/>
+		<sftp:read doc:name="Read" doc:id="eec85c53-1f65-4ef6-8012-11538f85afc3" config-ref="SFTP_Config" path="invoices.json" outputMimeType="application/json"/>
+		<ee:transform doc:name="Transform Message" doc:id="1561c204-0d26-4c41-9d8a-400dc3c23ad2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+// ================= VARIABLES =================
+
+var currencyParam = vars.currencyQP default null
+var invoiceId     = vars.id default null
+
+// ================= FUNCTION =================
+
+// Fonction pour convertir epoch seconds -> DateTime ISO
+fun toDateTime(epoch) =
+    (epoch as Number) as DateTime {unit: "seconds"}
+
+// ✅ Ton mapping EXACT, inchangé
+fun mapInvoice(invoiceWrapper) = do {
+
+    var inv = invoiceWrapper.data
+    var lines = inv.lines.data default []
+
+    ---
+    {
+        id: inv.id,
+
+        total: 
+            (lines map $.amount)
+                reduce ((item, acc = 0) -> acc + item),
+
+        currency: upper(inv.currency),
+
+        date: toDateTime(inv.created),
+
+        customer: {
+            id: inv.customer,
+            name: inv.customer_name,
+            email: inv.customer_email,
+            phone: inv.customer_phone,
+            city: inv.customer_address.city,
+            country: inv.customer_address.country,
+            postalCode: inv.customer_address.postal_code
+        },
+
+        lineItems: 
+            lines map (line) -> {
+                id: line.id,
+                amount: line.amount
+            }
+    }
+}
+
+//
+// ================= FILTRAGE =================
+//
+
+var safePayload =
+    if (payload is Array)
+        payload
+    else
+        []
+
+var afterCurrency =
+    if (currencyParam == null)
+        safePayload
+    else
+        safePayload filter (
+            upper($.data.currency) == upper(currencyParam)
+        )
+
+var afterId =
+    if (invoiceId == null)
+        afterCurrency
+    else
+        afterCurrency filter (
+            $.data.id as String == invoiceId as String
+        )
+
+//
+// ================= OUTPUT =================
+//
+
+---
+if (invoiceId != null)
+    if (isEmpty(afterId))
+        null
+    else
+        mapInvoice(afterId[0])
+else
+    afterId map (item) -> mapInvoice(item)
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="272fb120-8b2d-490a-aec0-e0b8d60f271a" />
+	</sub-flow>
+	<sub-flow name="SetupParameters" doc:id="060dc738-2f4a-4470-8ce6-96ec6f3184b7" >
+		<set-variable value="#[attributes.queryParams.currency default null]" doc:name="currencyQP" doc:id="39cd2f38-86b1-48dd-8f85-11fb08e82c51" variableName="currencyQP" />
+		<set-variable value="#[attributes.uriParams.id default null]" doc:name="id" doc:id="54052100-cc47-47d2-9bc8-8ea5ed74951e" variableName="id"/>
+	</sub-flow>
+</mule>
