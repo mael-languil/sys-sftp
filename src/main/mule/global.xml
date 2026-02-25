@@ -8,4 +8,7 @@ http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sft
 	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="acc3961d-939e-4eaa-aae4-e221797e1ca0" >
 		<sftp:connection workingDir="${sftp.wd}" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}"/>
 	</sftp:config>
+	<sftp:config name="SFTP_Config_Mael" doc:name="SFTP Config" doc:id="6993d0cf-df31-416d-b42f-104c440cb272" >
+		<sftp:connection workingDir="${sftp.wd}/Mael" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}" />
+	</sftp:config>
 </mule>

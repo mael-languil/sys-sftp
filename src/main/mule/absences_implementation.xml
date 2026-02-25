@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="interfaceFlow" doc:id="410b0096-31d2-42e1-aba1-bc74256229e6" >
+		<scheduler doc:name="Scheduler" doc:id="d1680caf-e4f6-42e6-94c9-f92366a19008" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="3" timeUnit="SECONDS" />
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="getHoinaco" doc:id="badcceb8-9c3f-4c6d-96d1-c5da097c2869" name="getHoinaco" />
+		<sftp:write doc:name="absences.csv" doc:id="3e4ae678-571d-4454-bb8c-ace16211967f" config-ref="SFTP_Config_Mael" path="absences.csv" />
+		<set-variable value="#[payload]" doc:name="bufferOfPayload" doc:id="6b410962-6e60-4594-b27c-2da3b0989282" variableName="bufferOfPayload" />
+		<set-payload value="0" doc:name="" doc:id="0d83ab2f-adac-4cb8-838e-4deba07be401" />
+		<sftp:read doc:name="Read" doc:id="13ac05a0-fa53-43c8-9b04-cf898c5235e0" config-ref="SFTP_Config_Mael" path="absences.csv" />
+		<set-payload value="0" doc:name="Failed" doc:id="dc5ef5b1-8184-47af-bba6-63f813083bbb" />
+		<choice doc:name="Choice" doc:id="535ec202-7fde-45d8-b82b-537cdeb5fd75" >
+			<when expression="#[payload == vars.bufferOfPayload]" >
+				<set-payload value="Absences successfully implemented !" doc:name="Absences successfully implemented !" doc:id="93f5b9e5-3dbb-4e9e-ad1d-a18163dc3313" />
+				<logger level="INFO" doc:name="Absences successfully implemented !1" doc:id="9a4ac031-6688-4e24-b96c-b1be78d9c207" message="Absences successfully implemented !" />
+			</when>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="4af196bc-5f1a-4997-8aeb-9497affb2280" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d018018d-6fa4-4db8-a7c2-4f530ea4a4e0" type="ANY" >
+				<set-payload value="File implementation failed" doc:name="File implementation failed" doc:id="5f28dd36-e19b-490b-8860-90b497821787" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<sub-flow name="getHoinaco" doc:id="f1b345f9-509d-47e7-af82-f0ec212e12fa" >
+		<sftp:read doc:name="Read" doc:id="8eb0c0bd-3208-4e4d-adf6-60bed28c23a7" config-ref="SFTP_Config" path="hoinaco.csv" outputMimeType="application/csv" />
+		<ee:transform doc:name="CSV to JSON" doc:id="d5305c24-4188-4e68-abf5-f134f8eed1ed" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (row) -> do {
+    var line = valuesOf(row)[0] as String
+    var fields = line splitBy ";"
+    ---
+    {
+        LIG        : fields[0],
+        CODSEL     : fields[1],
+        DATDEB     : fields[2],
+        DATFIN     : fields[3],
+        JAPP       : fields[4],
+        LIBSEL     : fields[5],
+        TEXTE_01   : fields[6],
+        MOTIF_01   : fields[7],
+        VALORIS_01 : fields[8],
+        MOTIDUR_01 : fields[9],
+        HRADEB_01  : fields[10],
+        HRAFIN_01  : fields[11],
+        LIBELLE_01 : fields[12],
+        TEXTE_02   : fields[13],
+        MOTIF_02   : fields[14],
+        VALORIS_02 : fields[15],
+        MOTIDUR_02 : fields[16],
+        HRADEB_02  : fields[17],
+        HRAFIN_02  : fields[18],
+        LIBELLE_02 : fields[19]
+    }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Mapping Spec" doc:id="441eb39c-a1d6-4abb-be99-9d03c44540f1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv separator=",", header=true
+
+// RG1 : TEXTE_01 -> typeOccupation
+var mapRG1 = {
+    "ACCT" : "M",
+    "CLD"  : "M",
+    "LM"   : "M",
+    "CLM"  : "M",
+    "MO"   : "M",
+    "MP"   : "M"
+}
+
+// RG2 : TEXTE_01 -> natureOccupation
+var mapRG2 = {
+	"ACCT": "Accident de travail",
+	"CLD": "Congé longue durée",
+	"LM": "Congé longue maladie",
+	"MO": "Congé maladie ordinaire",
+	"MP": "Maladie professionnelle"
+}
+
+// RG3/RG4 : dd/MM/yyyy -> yyyyMMddHHmmss
+fun transformDate(date: String): String =
+        (date as Date {format: "dd/MM/yyyy"} as String {format: "yyyyMMdd"}) ++ "000000"
+
+// RG5 : LIG
+fun transformOperation(LIG) = 
+	if (LIG == "SUP") "S" 
+	else if (LIG == "CRE") "X"
+	else ""
+	 
+
+---
+payload map(item) ->{
+	"matricule": item.CODSEL,
+	"codeCentre": "",
+	"typeOccupation": mapRG1[item.TEXTE_01] default "",
+	"natureOccupation": mapRG2[item.TEXTE_01] default "",
+	"dateDebut" : transformDate(item.DATDEB) ++ item.VALORIS_01,
+	"dateFin" : transformDate(item.DATFIN) ++ item.VALORIS_01,
+	"statut": "",
+	"poids": "",
+	"tempsTravail": "",
+	"tempsPresenceHeures": "",
+	"tempsPresenceMinutes": "",
+	"idTypeCompteur": "",
+	"nbTitreRestaurant": "",
+	"commentaire": "",
+	"operation": transformOperation(item.LIG)
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="7d095309-c0c6-4cb3-8526-7c4bb852ca1a" />
+	</sub-flow>
+</mule>

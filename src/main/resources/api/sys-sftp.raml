@@ -1,0 +1,162 @@
+#%RAML 1.0
+title: sys-sftp
+description: Basic template to start new projects
+
+#############
+## Headers ##
+#############
+
+baseUri: https://{host}/api/v1
+baseUriParameters:
+  host:
+    type: string
+    displayName: Domain name
+    example: app.cloudhub.com
+protocols:
+  - HTTPS
+
+uses:
+  paradisoLibrary: /exchange_modules/3b90109e-a38a-4252-ae3a-67ca3e9e3228/paradiso-library/1.0.0/paradiso-library.raml
+
+# Secure all endpoints
+#securedBy:
+#  - paradisoLibrary.clientIdEnforcement
+
+types:
+  Invoice: !include datatype/Invoices.raml
+  ProductInput: !include datatype/ProductsInput.raml
+  ProductOutput: !include datatype/ProductsOutput.raml
+
+###############
+## Endpoints ##
+###############
+
+# Pagination example
+#/customers:
+#  type:
+#    paradisoLibrary.pagination:
+#       # Type must be singular
+#       resourceType: Customer
+
+# # Basic endpoint
+# /contacts:
+#   is:
+#     - paradisoLibrary.error500
+#   get:
+#     responses:
+#       200:
+#         body:
+#           application/json:
+#             type: paradisoLibrary.standardSuccess
+#             # Override "data" field
+#             properties:
+#               statusCode:
+#                 type: number
+#                 example: 207
+#               data:
+#                 type: Customer[]
+
+# # CRUD example
+# /customers:
+#   type:
+#     paradisoLibrary.CRUD-collection:
+#       resourceType: Customer
+  # get:
+  # post:
+  #   is:
+  #     # You can add traits or override resource
+  #     - paradisoLibrary.error409
+
+  # /{id}:
+  #   uriParameters:
+  #     id:
+  #       type: string
+  #       displayName: Unique identifier
+  #       description: Customer ID
+  #       example: fqz54fsqdf
+
+  #   type:
+  #     paradisoLibrary.CRUD-item:
+  #       resourceType: Customer
+  #   get:
+  #   delete:
+  #   put:
+#     patch:
+#       body:
+#         application/json:
+#           # Override request body & add your <<resourceType>> with optionnal fields
+#           type: object
+#           properties:
+#             id?:
+#               type: string
+#               example: fdszf
+#             firstName?:
+#               type: string
+#               example: John
+#             lastName?:
+#               type: string
+#               example: Doe
+
+
+
+/invoices:
+  type:
+    paradisoLibrary.CRUD-collection:
+      resourceType: Invoice
+  get:
+    queryParameters:
+      currency:
+        type: string
+        required: false
+        enum: [USD, EUR]
+
+  /{id}:
+    uriParameters:
+      id:
+        type: string
+        displayName: Unique identifier
+        description: Invoice ID
+    type:
+      paradisoLibrary.CRUD-item:
+        resourceType: Invoice
+    get:
+
+
+/products:
+  type:
+    paradisoLibrary.CRUD-collection:
+      resourceType: ProductOutput
+  get:
+    queryParameters:
+      category:
+        type: string
+        required: false
+        enum: [Accessoire, Audio, Électronique, Graphisme, Sécurité]
+  post:
+    is:
+      - paradisoLibrary.error406
+
+  /{id}:
+    uriParameters:
+      id:
+        type: integer
+        displayName: Unique identifier
+        description: Product ID
+        example: 1
+    type:
+      paradisoLibrary.CRUD-item:
+        resourceType: ProductOutput
+    post:
+      description: Ajoute 1 au stock du produit
+      is:
+        - paradisoLibrary.error404
+    delete:
+      queryParameters:
+        qty:
+          type: integer
+          required: false
+          description: Quantité à retirer du stock (si absent, supprime le produit entier)
+      is:
+        - paradisoLibrary.error404
+
+

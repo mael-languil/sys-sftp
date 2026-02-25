@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
-    <http:listener-config name="sftpexo1-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
+    <http:listener-config name="sys-sftp-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8082" />
     </http:listener-config>
-    <apikit:config name="sftpexo1-config" api="sftpexo1.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <flow name="sftpexo1-main">
-        <http:listener config-ref="sftpexo1-httpListenerConfig" path="/api/*">
-            <http:response statusCode="#[vars.httpStatus default 200]" reasonPhrase='#[vars.reasonPhrase default "OK"]'>
-                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+    <apikit:config name="sys-sftp-config" api="sys-sftp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="sys-sftp-main">
+        <http:listener config-ref="sys-sftp-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:response>
-            <http:error-response statusCode="#[vars.httpStatus default 500]" reasonPhrase='#[vars.reasonPhrase default "Server Error"]'>
-                <http:body><![CDATA[#[payload]]]></http:body>
-                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:error-response>
         </http:listener>
-        <apikit:router config-ref="sftpexo1-config" />
+        <apikit:router config-ref="sys-sftp-config" />
         <error-handler>
             <on-error-propagate type="APIKIT:BAD_REQUEST">
                 <ee:transform doc:name="Transform Message">
@@ -97,8 +97,8 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="sftpexo1-console">
-        <http:listener config-ref="sftpexo1-httpListenerConfig" path="/console/*">
+    <flow name="sys-sftp-console">
+        <http:listener config-ref="sys-sftp-httpListenerConfig" path="/console/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:response>
@@ -107,7 +107,7 @@ output application/json
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:error-response>
         </http:listener>
-        <apikit:console config-ref="sftpexo1-config" />
+        <apikit:console config-ref="sys-sftp-config" />
         <error-handler>
             <on-error-propagate type="APIKIT:NOT_FOUND">
                 <ee:transform doc:name="Transform Message">
@@ -124,24 +124,55 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="get:\invoices:sftpexo1-config">
-		<flow-ref doc:name="GetInvoices" doc:id="5c086090-ae56-4e65-ba87-22fd1a2a1d47" name="GetInvoices"/>
-		<logger level="INFO" doc:name="Logger" doc:id="886f49d2-b5e8-4330-b954-7791d2bd0240" />
+    <flow name="get:\invoices:sys-sftp-config">
+        <flow-ref doc:name="GetInvoices" doc:id="9e2647d6-7790-4480-b85d-64db6b10cb4e" name="GetInvoices" />
+		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+&#45;&#45;-
+{
+  correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
+  statusCode: 500,
+  namespace: "APIKIT",
+  identifier: "INTERNAL_SERVER_ERROR",
+  description: "Something went wrong"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
+            </ee:message>
+        </ee:transform> [STUDIO] -->
     </flow>
-    <flow name="get:\invoices\(id):sftpexo1-config">
-		<flow-ref doc:name="GetInvoices" doc:id="e8f44734-a4b8-4c64-a23b-4434b3278bef" name="GetInvoices"/>
-		<validation:is-not-null doc:name="Is not null" doc:id="9044b4f7-f160-44b5-b7cb-121c36f914d0" value="#[payload]">
+	<flow name="get:\invoices\(id):sys-sftp-config">
+        <flow-ref doc:name="GetInvoices" doc:id="3889c350-b22c-4533-8986-7ac729a36446" name="GetInvoices" />
+		<validation:is-not-null doc:name="Is not null" doc:id="0518cdd3-2855-4cd3-8745-eef5cd228d84" value="#[payload]">
 			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:SORRY" />
 		</validation:is-not-null>
-		<logger level="INFO" doc:name="Logger" doc:id="b94d6069-1147-4a9c-890a-eebb9545868c" />
+		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform> [STUDIO] -->
+        <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+&#45;&#45;-
+{
+  correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
+  statusCode: 500,
+  namespace: "APIKIT",
+  identifier: "INTERNAL_SERVER_ERROR",
+  description: "Something went wrong"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
+            </ee:message>
+        </ee:transform> [STUDIO] -->
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="63005271-62e9-44b7-9454-16544c6850ac" type="APP:SORRY">
-				<set-variable value="707" doc:name="httpStatus" doc:id="693e182b-a784-4bd0-b98a-1f1102309489" variableName="httpStatus" />
-				<set-variable value="SORRY" doc:name="reasonPhrase" doc:id="ab76ccf4-b46c-46e2-a93b-ea6c13931e54" variableName="reasonPhrase"/>
-				<set-payload value='#["message": "Invoice not found for customer " ++ vars.id as String]' doc:name="Set Payload" doc:id="09d5549e-5ea5-4106-b36c-ecae9eb42d10"/>
-				<ee:transform doc:name="Transform Message" doc:id="99831a69-29f4-4fd4-96bc-19ccbed2747e">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="85b4ba21-20ec-45da-a4b6-1b17719cfd90" type="APP:SORRY" >
+				<set-variable value="707" doc:name="httpStatus" doc:id="d2317375-6e48-4a04-a667-431573ebbfea" variableName="httpStatus" />
+				<set-variable value="SORRY" doc:name="reasonPhrase" doc:id="f7b35837-7d91-4ad0-a18b-d354c6e3c8fd" variableName="reasonPhrase" />
+				<set-payload value='#["message": "Invoice not found for customer " ++ vars.id as String]' doc:name="Set Payload" doc:id="04c0a287-6a16-46a3-b242-a1029bd9aa1e" />
+				<ee:transform doc:name="Transform Message" doc:id="cd71a2f0-7dd0-4866-9028-59638620656a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 payload]]></ee:set-payload>
@@ -149,5 +180,79 @@ payload]]></ee:set-payload>
 				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
+    </flow>
+	<flow name="get:\products:sys-sftp-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
+  statusCode: 500,
+  namespace: "APIKIT",
+  identifier: "INTERNAL_SERVER_ERROR",
+  description: "Something went wrong"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+	<flow name="post:\products:application\json:sys-sftp-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
+  statusCode: 400,
+  namespace: "APIKIT",
+  identifier: "BAD_REQUEST",
+  description: "Field xxx is missing"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+	<flow name="post:\products\(id):sys-sftp-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
+  statusCode: 404,
+  namespace: "RESOURCE_NAME",
+  identifier: "NOT_FOUND",
+  description: "product not found with id xxx"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+	<flow name="delete:\products\(id):sys-sftp-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
+  statusCode: 404,
+  namespace: "RESOURCE_NAME",
+  identifier: "NOT_FOUND",
+  description: "product not found with id xxx"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
     </flow>
 </mule>
