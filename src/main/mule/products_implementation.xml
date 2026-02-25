@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="sub-getProducts" doc:id="8e984474-84bd-46f0-b0c1-eb67f40c012d" >
+		<sftp:read doc:name="Read" doc:id="0f4722b3-51ad-492f-8e54-94f938fb1553" config-ref="SFTP_Config_Local" path="products.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="a2bd0c05-24fb-4edf-9658-75eee93e9cb0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+// ================= VARIABLES =================
+
+var category = vars.CategoryProduct default null
+
+// ================= FUNCTIONS =================
+
+fun mapProduct(item) = {
+    id:       item.id as Number,
+    name:     item.name,
+    category: item.category,
+    price:    item.price as Number,
+    stock:    item.stock as Number
+}
+
+// ================= FILTRAGE =================
+
+var safePayload =
+    if (payload is Array)
+        payload
+    else
+        []
+
+var afterCategory =
+    if (category == null)
+        safePayload
+    else
+        safePayload filter (
+            $.category == category
+        )
+
+// ================= MAPPING =================
+
+---
+afterCategory map (item) -> mapProduct(item)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="9f519cb5-d186-4bd8-b908-c0743ed8ce5a" />
+	</sub-flow>
+</mule>

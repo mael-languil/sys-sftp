@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
-http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd  http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
     <http:listener-config name="sys-sftp-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8082" />
     </http:listener-config>
-    <apikit:config name="sys-sftp-config" api="sys-sftp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="sys-sftp-config" api="resource::3b90109e-a38a-4252-ae3a-67ca3e9e3228:sys-sftp:1.2.2:raml:zip:sys-sftp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="sys-sftp-main">
         <http:listener config-ref="sys-sftp-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -126,7 +125,7 @@ output application/json
     </flow>
     <flow name="get:\invoices:sys-sftp-config">
         <flow-ref doc:name="GetInvoices" doc:id="9e2647d6-7790-4480-b85d-64db6b10cb4e" name="GetInvoices" />
-		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
+        <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -141,12 +140,12 @@ output application/json
             </ee:message>
         </ee:transform> [STUDIO] -->
     </flow>
-	<flow name="get:\invoices\(id):sys-sftp-config">
+    <flow name="get:\invoices\(id):sys-sftp-config">
         <flow-ref doc:name="GetInvoices" doc:id="3889c350-b22c-4533-8986-7ac729a36446" name="GetInvoices" />
-		<validation:is-not-null doc:name="Is not null" doc:id="0518cdd3-2855-4cd3-8745-eef5cd228d84" value="#[payload]">
-			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:SORRY" />
-		</validation:is-not-null>
-		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
+        <validation:is-not-null doc:name="Is not null" doc:id="0518cdd3-2855-4cd3-8745-eef5cd228d84" value="#[payload]">
+            <error-mapping sourceType="VALIDATION:NULL" targetType="APP:SORRY" />
+        </validation:is-not-null>
+        <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
@@ -165,39 +164,41 @@ output application/json
 } as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
             </ee:message>
         </ee:transform> [STUDIO] -->
-		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="85b4ba21-20ec-45da-a4b6-1b17719cfd90" type="APP:SORRY" >
-				<set-variable value="707" doc:name="httpStatus" doc:id="d2317375-6e48-4a04-a667-431573ebbfea" variableName="httpStatus" />
-				<set-variable value="SORRY" doc:name="reasonPhrase" doc:id="f7b35837-7d91-4ad0-a18b-d354c6e3c8fd" variableName="reasonPhrase" />
-				<set-payload value='#["message": "Invoice not found for customer " ++ vars.id as String]' doc:name="Set Payload" doc:id="04c0a287-6a16-46a3-b242-a1029bd9aa1e" />
-				<ee:transform doc:name="Transform Message" doc:id="cd71a2f0-7dd0-4866-9028-59638620656a" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="85b4ba21-20ec-45da-a4b6-1b17719cfd90" type="APP:SORRY">
+                <set-variable value="707" doc:name="httpStatus" doc:id="d2317375-6e48-4a04-a667-431573ebbfea" variableName="httpStatus" />
+                <set-variable value="SORRY" doc:name="reasonPhrase" doc:id="f7b35837-7d91-4ad0-a18b-d354c6e3c8fd" variableName="reasonPhrase" />
+                <set-payload value="#[&quot;message&quot;: &quot;Invoice not found for customer &quot; ++ vars.id as String]" doc:name="Set Payload" doc:id="04c0a287-6a16-46a3-b242-a1029bd9aa1e" />
+                <ee:transform doc:name="Transform Message" doc:id="cd71a2f0-7dd0-4866-9028-59638620656a">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</on-error-propagate>
-		</error-handler>
+                    </ee:message>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
     </flow>
-	<flow name="get:\products:sys-sftp-config">
-        <ee:transform doc:name="Transform Message">
+    <flow name="get:\products:sys-sftp-config">
+        <set-variable value="#[attributes.queryParams.category]" doc:name="CategoryProduct" doc:id="9be5a54b-94f1-4169-b5ab-04d5591d9cd9" variableName="CategoryProduct"/>
+		<flow-ref doc:name="sub-getProducts" doc:id="fbc9ade6-cceb-49b9-a849-7d01094dacce" name="sub-getProducts" />
+        <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
----
+&#45;&#45;-
 {
   correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
   statusCode: 500,
   namespace: "APIKIT",
   identifier: "INTERNAL_SERVER_ERROR",
   description: "Something went wrong"
-} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+} as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
             </ee:message>
-        </ee:transform>
+        </ee:transform> [STUDIO] -->
     </flow>
-	<flow name="post:\products:application\json:sys-sftp-config">
+    <flow name="post:\products:application\json:sys-sftp-config">
         <ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
@@ -213,7 +214,7 @@ output application/json
             </ee:message>
         </ee:transform>
     </flow>
-	<flow name="post:\products\(id):sys-sftp-config">
+    <flow name="post:\products\(id):sys-sftp-config">
         <ee:transform doc:name="Transform Message">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
@@ -234,7 +235,7 @@ output application/json
             </ee:message>
         </ee:transform>
     </flow>
-	<flow name="delete:\products\(id):sys-sftp-config">
+    <flow name="delete:\products\(id):sys-sftp-config">
         <ee:transform doc:name="Transform Message">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>

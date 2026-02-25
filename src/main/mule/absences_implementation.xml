@@ -6,11 +6,11 @@
 http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="interfaceFlow" doc:id="410b0096-31d2-42e1-aba1-bc74256229e6" >
-		<scheduler doc:name="Scheduler" doc:id="d1680caf-e4f6-42e6-94c9-f92366a19008" >
+		<!-- [STUDIO:"Scheduler"]<scheduler doc:name="Scheduler" doc:id="d1680caf-e4f6-42e6-94c9-f92366a19008" >
 			<scheduling-strategy >
 				<fixed-frequency frequency="3" timeUnit="SECONDS" />
 			</scheduling-strategy>
-		</scheduler>
+		</scheduler> [STUDIO] -->
 		<flow-ref doc:name="getHoinaco" doc:id="badcceb8-9c3f-4c6d-96d1-c5da097c2869" name="getHoinaco" />
 		<sftp:write doc:name="absences.csv" doc:id="3e4ae678-571d-4454-bb8c-ace16211967f" config-ref="SFTP_Config_Mael" path="absences.csv" />
 		<set-variable value="#[payload]" doc:name="bufferOfPayload" doc:id="6b410962-6e60-4594-b27c-2da3b0989282" variableName="bufferOfPayload" />

@@ -8,4 +8,5 @@ sftp:
   user: "linkr"
   password: "linkr2026"
   wd : "upload/theu"
-  
+
+env : ""

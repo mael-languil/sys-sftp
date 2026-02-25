@@ -67,6 +67,13 @@
 			<version>2.0.8</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
+		<dependency>
+			<groupId>3b90109e-a38a-4252-ae3a-67ca3e9e3228</groupId>
+			<artifactId>sys-sftp</artifactId>
+			<version>1.2.2</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
+		</dependency>
 	</dependencies>
 
 	<repositories>
