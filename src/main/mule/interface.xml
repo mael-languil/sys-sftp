@@ -2,10 +2,10 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd  http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
     <flow name="sys-sftp-main">
         <http:listener path="/api/*" config-ref="HTTP_Listener_config_apikit">
-            <http:response statusCode="#[vars.httpStatus default 200]">
+            <http:response statusCode="#[vars.httpStatus default 200]" reasonPhrase='#[vars.reasonPhrase default "OK"]'>
                 <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:response>
-            <http:error-response statusCode="#[vars.httpStatus default 500]">
+            <http:error-response statusCode="#[vars.httpStatus default 500]" reasonPhrase='#[vars.reasonPhrase default "Server Error"]'>
                 <http:body><![CDATA[#[payload]]]></http:body>
                 <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:error-response>
@@ -115,11 +115,6 @@ output application/json
             <error-mapping sourceType="VALIDATION:NULL" targetType="APP:SORRY" />
         </validation:is-not-null>
         <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform> [STUDIO] -->
-        <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -168,13 +163,23 @@ output application/json
         </ee:transform> [STUDIO] -->
     </flow>
     <flow name="post:\products:application\json:sys-sftp-config">
+<<<<<<< HEAD
         <flow-ref doc:name="sub-postProducts" doc:id="fa807da5-a453-4577-ba55-9ca05c3398ea" name="sub-postProducts"/>
 		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
+=======
+        <flow-ref doc:name="sub-postProducts" doc:id="b7da21ce-7787-484b-87dc-2a03a7aa2150" name="sub-postProducts"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d86c7635-10ea-46f2-98cf-39f1f3e6cc9a" type="APP:PRODUCT_ALREADY_EXISTS">
+				<set-variable value="406" doc:name="httpStatus" doc:id="cf489afd-2d2c-4b5a-903e-a535462e98b8" variableName="httpStatus" />
+				<set-variable value="Not Acceptable" doc:name="reasonPhrase" doc:id="b425954e-5a02-4fac-ab0b-e2be06a6e088" variableName="reasonPhrase"/>
+				<ee:transform doc:name="Transform Message">
+>>>>>>> feature/post-product
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 &#45;&#45;-
 {
+<<<<<<< HEAD
   correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
   statusCode: 400,
   namespace: "APIKIT",
@@ -183,6 +188,19 @@ output application/json
 } as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
             </ee:message>
         </ee:transform> [STUDIO] -->
+=======
+  correlationId: correlationId,
+  statusCode: vars.httpStatus,
+  namespace: "POST Product",
+  identifier: "Not Acceptable",
+  description: "ID already exists !"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="9836ea15-e776-4bbc-82bb-6433e929acff" />
+			</on-error-propagate>
+		</error-handler>
+>>>>>>> feature/post-product
     </flow>
     <flow name="post:\products\(id):sys-sftp-config">
         <ee:transform doc:name="Transform Message">
