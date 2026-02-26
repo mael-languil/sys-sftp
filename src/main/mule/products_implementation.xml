@@ -54,15 +54,6 @@ afterCategory map (item) -> mapProduct(item)]]></ee:set-payload>
 	<sub-flow name="sub-postProducts" doc:id="9acd71cd-ca18-47de-af3b-b471ba469b6a" >
 		<set-variable value="#[payload]" doc:name="NewProduct" doc:id="800b6f15-fbb1-475f-9a03-5d54cde18a39" variableName="NewProduct"/>
 		<flow-ref doc:name="sub-getProducts" doc:id="8cac5f80-2eae-4abc-9e0d-5cb672eea477" name="sub-getProducts"/>
-<<<<<<< HEAD
-		<set-variable value="" doc:name="ExistingProducts" doc:id="9ef3640e-898c-4176-b9ad-c4fed1a920f7" variableName="ExistingProducts"/>
-		<choice doc:name="Choice" doc:id="c124479d-479e-4eee-b78c-a845895d6f11" >
-			<when expression="#[vars.NewProduct.id != vars.ExistingProducts.id]">
-				<logger level="INFO" doc:name="Logger" doc:id="4fa1ecce-ab97-4aa9-866c-defe1f9262cc" />
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="abc57718-7df1-4d53-a8a8-88f00607facf" />
-=======
 		<set-variable value="#[payload]" doc:name="ExistingProducts" doc:id="9ef3640e-898c-4176-b9ad-c4fed1a920f7" variableName="ExistingProducts"/>
 		<choice doc:name="Choice" doc:id="c124479d-479e-4eee-b78c-a845895d6f11" >
 			<when expression="#[not (((vars.existingProducts default []) map (item) -&gt; item.id) contains vars.newProduct.id)]">
@@ -100,7 +91,6 @@ var newProduct       = vars.newProduct
 				<validation:is-null doc:name="Is null" doc:id="fc3b00b3-22d9-4756-a666-6c16e77a3b1a" value="#[vars.Error]">
 					<error-mapping sourceType="VALIDATION:NOT_NULL" targetType="APP:PRODUCT_ALREADY_EXISTS" />
 				</validation:is-null>
->>>>>>> feature/post-product
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Logger" doc:id="a185e1a0-37bd-418c-925c-77cbc58b1823" />

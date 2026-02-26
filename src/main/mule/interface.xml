@@ -163,32 +163,17 @@ output application/json
         </ee:transform> [STUDIO] -->
     </flow>
     <flow name="post:\products:application\json:sys-sftp-config">
-<<<<<<< HEAD
-        <flow-ref doc:name="sub-postProducts" doc:id="fa807da5-a453-4577-ba55-9ca05c3398ea" name="sub-postProducts"/>
-		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
-=======
         <flow-ref doc:name="sub-postProducts" doc:id="b7da21ce-7787-484b-87dc-2a03a7aa2150" name="sub-postProducts"/>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d86c7635-10ea-46f2-98cf-39f1f3e6cc9a" type="APP:PRODUCT_ALREADY_EXISTS">
 				<set-variable value="406" doc:name="httpStatus" doc:id="cf489afd-2d2c-4b5a-903e-a535462e98b8" variableName="httpStatus" />
 				<set-variable value="Not Acceptable" doc:name="reasonPhrase" doc:id="b425954e-5a02-4fac-ab0b-e2be06a6e088" variableName="reasonPhrase"/>
 				<ee:transform doc:name="Transform Message">
->>>>>>> feature/post-product
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
-&#45;&#45;-
+---
 {
-<<<<<<< HEAD
-  correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
-  statusCode: 400,
-  namespace: "APIKIT",
-  identifier: "BAD_REQUEST",
-  description: "Field xxx is missing"
-} as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
-            </ee:message>
-        </ee:transform> [STUDIO] -->
-=======
   correlationId: correlationId,
   statusCode: vars.httpStatus,
   namespace: "POST Product",
@@ -200,7 +185,6 @@ output application/json
 				<logger level="INFO" doc:name="Logger" doc:id="9836ea15-e776-4bbc-82bb-6433e929acff" />
 			</on-error-propagate>
 		</error-handler>
->>>>>>> feature/post-product
     </flow>
     <flow name="post:\products\(id):sys-sftp-config">
         <ee:transform doc:name="Transform Message">
