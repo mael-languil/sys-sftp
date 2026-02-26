@@ -88,11 +88,49 @@ var newProduct       = vars.newProduct
 			</when>
 			<otherwise>
 				<set-variable value="1" doc:name="Error" doc:id="745d73a9-1adc-4e4d-ad1e-f65c96a3dbea" variableName="Error"/>
-				<validation:is-null doc:name="Is null" doc:id="fc3b00b3-22d9-4756-a666-6c16e77a3b1a" value="#[vars.Error]">
+				<validation:is-null doc:name="APP:PRODUCT_ALREADY_EXISTS" doc:id="fc3b00b3-22d9-4756-a666-6c16e77a3b1a" value="#[vars.Error]">
 					<error-mapping sourceType="VALIDATION:NOT_NULL" targetType="APP:PRODUCT_ALREADY_EXISTS" />
 				</validation:is-null>
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Logger" doc:id="a185e1a0-37bd-418c-925c-77cbc58b1823" />
+	</sub-flow>
+	<sub-flow name="sub-postProducts-stock" doc:id="f7e6cc88-3590-48ce-b27e-ceb996c940a7" >
+		<set-variable value="#[attributes.uriParams.id as Number]" doc:name="ProductID" doc:id="71c0354b-3d09-4b63-9bdb-33d8fd352b93" variableName="ProductID"/>
+		<flow-ref doc:name="sub-getProducts" doc:id="40857002-8432-4a72-8488-ef1f62ae344d" name="sub-getProducts" />
+		<choice doc:name="Choice" doc:id="ceec7435-0f13-4e61-820f-c64cb5d19fd5" >
+			<when expression="#[not isEmpty(payload filter ($.id == vars.ProductID as Number))]">
+				<ee:transform doc:name="Increment Produit (+1)" doc:id="bba30177-36b1-49a4-96e2-0c28c8d841af">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/csv header=true
+
+var productId = vars.ProductID
+---
+payload map (item) ->
+    if (item.id == productId)
+        {
+            id:       item.id,
+            name:     item.name,
+            category: item.category,
+            price:    item.price,
+            stock:    (item.stock as Number) + 1
+        }
+    else
+        item
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<sftp:write doc:name="Write" doc:id="a140f561-df73-4bf6-a271-6753b430ca98" config-ref="SFTP_Config_Local" path="products.csv" />
+				<logger level="INFO" doc:name="Logger" doc:id="da172182-9046-466e-a8ca-73e513be237f" />
+			</when>
+			<otherwise >
+				<set-variable value="1" doc:name="Error" doc:id="64da27e3-15d4-41c5-a585-f0ec67f62a76" variableName="Error" />
+				<validation:is-null doc:name="APP:PRODUCT_NOT_FOUND" doc:id="88ade7cf-e0bd-439b-a758-32ce59143cd1" value="#[vars.Error]">
+					<error-mapping sourceType="VALIDATION:NOT_NULL" targetType="APP:PRODUCT_NOT_FOUND" />
+				</validation:is-null>
+			</otherwise>
+		</choice>
 	</sub-flow>
 </mule>

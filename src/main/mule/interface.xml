@@ -187,25 +187,48 @@ output application/json
 		</error-handler>
     </flow>
     <flow name="post:\products\(id):sys-sftp-config">
-        <ee:transform doc:name="Transform Message">
+        <flow-ref doc:name="sub-postProducts-stock" doc:id="7ced3757-6984-4f57-91cf-eba57a4811ca" name="sub-postProducts-stock"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f4617928-b6a0-4176-bbf4-e50ae2daf2ae" />
+		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
-        </ee:transform>
-        <ee:transform doc:name="Transform Message">
+        </ee:transform> [STUDIO] -->
+        <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
----
+&#45;&#45;-
 {
   correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
   statusCode: 404,
   namespace: "RESOURCE_NAME",
   identifier: "NOT_FOUND",
   description: "product not found with id xxx"
-} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+} as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
             </ee:message>
-        </ee:transform>
+        </ee:transform> [STUDIO] -->
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="58c50df2-d64f-4f95-8d6a-2749e2782788" type="APP:PRODUCT_NOT_FOUND" >
+				<set-variable value="404" doc:name="httpStatus" doc:id="9450e3b9-3661-4de5-85ec-20d6249b533d" variableName="httpStatus" />
+				<set-variable value="Not Found" doc:name="reasonPhrase" doc:id="576e61ea-57af-4bd0-88a8-7d49a023e49d" variableName="reasonPhrase" />
+				<ee:transform doc:name="Transform Message" doc:id="4d23f00a-0cd6-46a4-86a9-366dc02f6981" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  correlationId: correlationId,
+  statusCode: vars.httpStatus,
+  namespace: "POST Product Stock",
+  identifier: "Not Found",
+  description: "ID doens't exist !"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="7e171bf4-1213-4e21-806f-2cd767ae09b1" />
+			</on-error-propagate>
+		</error-handler>
     </flow>
     <flow name="delete:\products\(id):sys-sftp-config">
         <ee:transform doc:name="Transform Message">
