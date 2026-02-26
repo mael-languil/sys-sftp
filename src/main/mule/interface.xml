@@ -187,7 +187,8 @@ output application/json
 		</error-handler>
     </flow>
     <flow name="post:\products\(id):sys-sftp-config">
-        <flow-ref doc:name="sub-postProducts-stock" doc:id="7ced3757-6984-4f57-91cf-eba57a4811ca" name="sub-postProducts-stock"/>
+        <flow-ref doc:name="sub-define-parameters" doc:id="4152f406-838e-4ebb-9d3d-4daab4359c5a" name="sub-define-parameters" />
+		<flow-ref doc:name="sub-postProducts-stock" doc:id="7ced3757-6984-4f57-91cf-eba57a4811ca" name="sub-postProducts-stock"/>
 		<logger level="INFO" doc:name="Logger" doc:id="f4617928-b6a0-4176-bbf4-e50ae2daf2ae" />
 		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:variables>
@@ -231,24 +232,55 @@ output application/json
 		</error-handler>
     </flow>
     <flow name="delete:\products\(id):sys-sftp-config">
-        <ee:transform doc:name="Transform Message">
+		<flow-ref doc:name="sub-define-parameters" doc:id="8d5b75b5-e514-43d8-82c7-dfdc66bed75a" name="sub-define-parameters"/>
+		<choice doc:name="Choice" doc:id="6925405b-36fd-4b5c-a8ea-486c03e70348" >
+			<when expression='#[vars.ProductQuantityQP != ""]'>
+				<logger level="INFO" doc:name="Logger" doc:id="c950be87-b690-48db-bc53-d63bb202ef50" />
+			</when>
+			<otherwise >
+				<flow-ref doc:name="sub-deleteProduct" doc:id="4fbb273f-f37f-4a32-a714-10217a30e502" name="sub-deleteProduct" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="45aff21c-4588-45e2-acde-1fa020d1c96a" />
+		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
-        </ee:transform>
-        <ee:transform doc:name="Transform Message">
+        </ee:transform> [STUDIO] -->
+        <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
----
+&#45;&#45;-
 {
   correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
   statusCode: 404,
   namespace: "RESOURCE_NAME",
   identifier: "NOT_FOUND",
   description: "product not found with id xxx"
-} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+} as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
             </ee:message>
-        </ee:transform>
+        </ee:transform> [STUDIO] -->
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e0bbf212-3fa9-448e-87d4-1cb48d3ec941" type="APP:PRODUCT_NOT_FOUND" >
+				<set-variable value="404" doc:name="httpStatus" doc:id="587e9934-600d-48e3-a97c-89dccdd5d99a" variableName="httpStatus" />
+				<set-variable value="Not Found" doc:name="reasonPhrase" doc:id="0334e91e-de3f-4347-b8fb-33814b6e0e2c" variableName="reasonPhrase" />
+				<ee:transform doc:name="Transform Message" doc:id="36f11962-b549-473c-b8a2-4231974150e6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  correlationId: correlationId,
+  statusCode: vars.httpStatus,
+  namespace: "DELETE Product",
+  identifier: "Not Found",
+  description: "ID doens't exist !"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="651f857f-811b-41f6-8d81-03abefc58d15" />
+			</on-error-propagate>
+		</error-handler>
     </flow>
 </mule>

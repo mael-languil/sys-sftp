@@ -6,6 +6,10 @@
 http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="sub-define-parameters" doc:id="6d60bcef-373d-4ec4-93dc-3d4a16f21551" >
+		<set-variable value="#[attributes.uriParams.id as Number default null]" doc:name="ProductID" doc:id="72df6877-5443-40dc-8669-56e4396121eb" variableName="ProductID" />
+		<set-variable value='#[attributes.queryParams.quantity as String default ""]' doc:name="ProductQuantityQP" doc:id="8b356ed9-a485-4672-acec-48a2b7434e12" variableName="ProductQuantityQP"/>
+	</sub-flow>
 	<sub-flow name="sub-getProducts" doc:id="8e984474-84bd-46f0-b0c1-eb67f40c012d" >
 		<sftp:read doc:name="Read" doc:id="0f4722b3-51ad-492f-8e54-94f938fb1553" config-ref="SFTP_Config_Local" path="products.csv"/>
 		<ee:transform doc:name="CSV to JSON" doc:id="a2bd0c05-24fb-4edf-9658-75eee93e9cb0" >
@@ -96,7 +100,6 @@ var newProduct       = vars.newProduct
 		<logger level="INFO" doc:name="Logger" doc:id="a185e1a0-37bd-418c-925c-77cbc58b1823" />
 	</sub-flow>
 	<sub-flow name="sub-postProducts-stock" doc:id="f7e6cc88-3590-48ce-b27e-ceb996c940a7" >
-		<set-variable value="#[attributes.uriParams.id as Number]" doc:name="ProductID" doc:id="71c0354b-3d09-4b63-9bdb-33d8fd352b93" variableName="ProductID"/>
 		<flow-ref doc:name="sub-getProducts" doc:id="40857002-8432-4a72-8488-ef1f62ae344d" name="sub-getProducts" />
 		<choice doc:name="Choice" doc:id="ceec7435-0f13-4e61-820f-c64cb5d19fd5" >
 			<when expression="#[not isEmpty(payload filter ($.id == vars.ProductID as Number))]">
@@ -128,6 +131,31 @@ payload map (item) ->
 			<otherwise >
 				<set-variable value="1" doc:name="Error" doc:id="64da27e3-15d4-41c5-a585-f0ec67f62a76" variableName="Error" />
 				<validation:is-null doc:name="APP:PRODUCT_NOT_FOUND" doc:id="88ade7cf-e0bd-439b-a758-32ce59143cd1" value="#[vars.Error]">
+					<error-mapping sourceType="VALIDATION:NOT_NULL" targetType="APP:PRODUCT_NOT_FOUND" />
+				</validation:is-null>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="sub-deleteProduct" doc:id="376183b1-f764-4ba9-950e-e7b1cb568aad" >
+		<flow-ref doc:name="sub-getProducts" doc:id="a284cfbb-8559-4148-9052-2346e5bf43ee" name="sub-getProducts" />
+		<choice doc:name="Choice" doc:id="1b89692a-23ca-4cad-8f76-c7afe375398b" >
+			<when expression="#[not isEmpty(payload filter ($.id == vars.ProductID as Number))]">
+				<ee:transform doc:name="Delete One Product (ByID)" doc:id="e4ec7f34-476d-4ec1-b2c7-460864b5d271">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+%dw 2.0
+output application/csv header=true
+---
+payload filter ($.id != vars.ProductID as Number)
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<sftp:write doc:name="Write" doc:id="92c78ebf-52f1-4d50-a441-b930e9d8610e" config-ref="SFTP_Config_Local" path="products.csv" />
+				<logger level="INFO" doc:name="Logger" doc:id="9a56c2e4-b021-4783-a0a1-46fee45215dd" />
+			</when>
+			<otherwise >
+				<set-variable value="1" doc:name="Error" doc:id="18382e01-d335-48ec-97d0-de2cbe8dec6e" variableName="Error" />
+				<validation:is-null doc:name="APP:PRODUCT_NOT_FOUND" doc:id="fc7e97e4-8e42-4fe1-a923-a90bfce8fe53" value="#[vars.Error]">
 					<error-mapping sourceType="VALIDATION:NOT_NULL" targetType="APP:PRODUCT_NOT_FOUND" />
 				</validation:is-null>
 			</otherwise>
