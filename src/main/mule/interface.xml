@@ -235,7 +235,7 @@ output application/json
 		<flow-ref doc:name="sub-define-parameters" doc:id="8d5b75b5-e514-43d8-82c7-dfdc66bed75a" name="sub-define-parameters"/>
 		<choice doc:name="Choice" doc:id="6925405b-36fd-4b5c-a8ea-486c03e70348" >
 			<when expression='#[vars.ProductQuantityQP != ""]'>
-				<logger level="INFO" doc:name="Logger" doc:id="c950be87-b690-48db-bc53-d63bb202ef50" />
+				<flow-ref doc:name="sub-deleteProduct-stock" doc:id="a4f5c63c-0483-48bb-9122-b8634134e283" name="sub-deleteProduct-stock"/>
 			</when>
 			<otherwise >
 				<flow-ref doc:name="sub-deleteProduct" doc:id="4fbb273f-f37f-4a32-a714-10217a30e502" name="sub-deleteProduct" />

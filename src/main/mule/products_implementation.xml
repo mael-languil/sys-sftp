@@ -161,4 +161,31 @@ payload filter ($.id != vars.ProductID as Number)
 			</otherwise>
 		</choice>
 	</sub-flow>
+	<sub-flow name="sub-deleteProduct-stock" doc:id="17f82db2-6773-4909-87a1-f172834508d4" >
+		<flow-ref doc:name="sub-getProducts" doc:id="bb436aa0-d5c4-4273-adc9-81ebf1c9c219" name="sub-getProducts" />
+		<ee:transform doc:name="Delete Stock in One Product" doc:id="0ef239a6-9a8b-426d-95a4-2cb4494f8427" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv header=true
+---
+(payload filter (item) -> 
+    (item.id as Number != vars.ProductID as Number) or 
+    ((item.stock as Number) - (vars.ProductQuantityQP as Number) > 0))
+map (item) ->
+    if (item.id as Number == vars.ProductID as Number)
+        {
+            id:       item.id,
+            name:     item.name,
+            category: item.category,
+            price:    item.price,
+            stock:    (item.stock as Number) - (vars.ProductQuantityQP as Number)
+        }
+    else
+        item
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<sftp:write doc:name="Write" doc:id="75259585-5c30-4ef5-97e6-1b9952869ff2" config-ref="SFTP_Config_Local" path="products.csv" />
+		<logger level="INFO" doc:name="Logger" doc:id="903a2a9f-448a-425b-bc0f-94aa95d95c22" />
+	</sub-flow>
 </mule>
