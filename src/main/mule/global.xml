@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
-	<configuration-properties doc:name="Configuration properties" doc:id="df6bfc7e-8857-4289-b344-de0acbefec34" file="config.yaml" />
-	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="acc3961d-939e-4eaa-aae4-e221797e1ca0" >
-		<sftp:connection workingDir="${sftp.wd}" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}"/>
-	</sftp:config>
-	<sftp:config name="SFTP_Config_Mael" doc:name="SFTP Config" doc:id="6993d0cf-df31-416d-b42f-104c440cb272" >
-		<sftp:connection workingDir="${sftp.wd}/Mael" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}" />
-	</sftp:config>
-	<sftp:config name="SFTP_Config_Local" doc:name="SFTP Config" doc:id="150f7000-2015-4e65-be3b-bd189b1ba05d" >
-		<sftp:connection workingDir="${sftp.wd}/Mael/Local" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}" />
-	</sftp:config>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
+    <configuration-properties doc:name="Configuration properties" doc:id="df6bfc7e-8857-4289-b344-de0acbefec34" file="config.yaml" />
+    <sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="acc3961d-939e-4eaa-aae4-e221797e1ca0">
+        <sftp:connection workingDir="${sftp.wd}" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}" />
+    </sftp:config>
+    <sftp:config name="SFTP_Config_Mael" doc:name="SFTP Config" doc:id="6993d0cf-df31-416d-b42f-104c440cb272">
+        <sftp:connection workingDir="${sftp.wd}/Mael" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}" />
+    </sftp:config>
+    <sftp:config name="SFTP_Config_Local" doc:name="SFTP Config" doc:id="150f7000-2015-4e65-be3b-bd189b1ba05d">
+        <sftp:connection workingDir="${sftp.wd}/Mael/Local" host="${sftp.host}" port="${sftp.port}" username="${sftp.user}" password="${sftp.password}" />
+    </sftp:config>
+    <http:listener-config name="HTTP_Listener_config_apikit" doc:name="HTTP Listener config" doc:id="f42ac892-8041-483a-abd9-d1febdaf16b7">
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
+    </http:listener-config>
+    <apikit:config name="sys-sftp-config" api="resource::3b90109e-a38a-4252-ae3a-67ca3e9e3228:sys-sftp:1.2.4:raml:zip:sys-sftp.raml" outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" />
 </mule>
