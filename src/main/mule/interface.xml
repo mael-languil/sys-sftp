@@ -168,20 +168,21 @@ output application/json
         </ee:transform> [STUDIO] -->
     </flow>
     <flow name="post:\products:application\json:sys-sftp-config">
-        <ee:transform doc:name="Transform Message">
+        <flow-ref doc:name="sub-postProducts" doc:id="b7da21ce-7787-484b-87dc-2a03a7aa2150" name="sub-postProducts"/>
+		<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
----
+&#45;&#45;-
 {
   correlationId: "fe5zef1-194b-475c-8dee-0zef56zf4180",
   statusCode: 400,
   namespace: "APIKIT",
   identifier: "BAD_REQUEST",
   description: "Field xxx is missing"
-} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+} as Object {encoding: "UTF-8", mediaType: "application/json"}&#93;&#93;></ee:set-payload>
             </ee:message>
-        </ee:transform>
+        </ee:transform> [STUDIO] -->
     </flow>
     <flow name="post:\products\(id):sys-sftp-config">
         <ee:transform doc:name="Transform Message">

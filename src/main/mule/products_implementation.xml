@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sft
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<sub-flow name="sub-getProducts" doc:id="8e984474-84bd-46f0-b0c1-eb67f40c012d" >
 		<sftp:read doc:name="Read" doc:id="0f4722b3-51ad-492f-8e54-94f938fb1553" config-ref="SFTP_Config_Local" path="products.csv"/>
-		<ee:transform doc:name="Transform Message" doc:id="a2bd0c05-24fb-4edf-9658-75eee93e9cb0" >
+		<ee:transform doc:name="CSV to JSON" doc:id="a2bd0c05-24fb-4edf-9658-75eee93e9cb0" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -49,5 +49,46 @@ afterCategory map (item) -> mapProduct(item)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="9f519cb5-d186-4bd8-b908-c0743ed8ce5a" />
+	</sub-flow>
+	<sub-flow name="sub-postProducts" doc:id="9acd71cd-ca18-47de-af3b-b471ba469b6a" >
+		<set-variable value="#[payload]" doc:name="NewProduct" doc:id="800b6f15-fbb1-475f-9a03-5d54cde18a39" variableName="NewProduct"/>
+		<flow-ref doc:name="sub-getProducts" doc:id="8cac5f80-2eae-4abc-9e0d-5cb672eea477" name="sub-getProducts"/>
+		<set-variable value="#[payload]" doc:name="ExistingProducts" doc:id="9ef3640e-898c-4176-b9ad-c4fed1a920f7" variableName="ExistingProducts"/>
+		<choice doc:name="Choice" doc:id="c124479d-479e-4eee-b78c-a845895d6f11" >
+			<when expression="#[not (((vars.existingProducts default []) map (item) -&gt; item.id) contains vars.newProduct.id)]">
+				<ee:transform doc:name="JSON to CSV (+NewProduct)" doc:id="e660b0d5-20dd-4881-9d02-59c683cacd98">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/csv header=true
+
+var existingProducts = if (vars.existingProducts != null) vars.existingProducts else []
+var newProduct       = vars.newProduct
+---
+(existingProducts map (item) -> {
+    id:       item.id,
+    name:     item.name,
+    category: item.category,
+    price:    item.price,
+    stock:    item.stock
+})
+++
+[{
+    id:       newProduct.id,
+    name:     newProduct.name,
+    category: newProduct.category,
+    price:    newProduct.price,
+    stock:    newProduct.stock
+}]
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<sftp:write doc:name="Write" doc:id="119b760d-e687-4f28-a02a-50f79f4849f2" config-ref="SFTP_Config_Local" path="products.csv"/>
+				<logger level="INFO" doc:name="Logger" doc:id="ff82fcaf-2963-49c8-b096-30288039e2fa" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="abc57718-7df1-4d53-a8a8-88f00607facf" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="a185e1a0-37bd-418c-925c-77cbc58b1823" />
 	</sub-flow>
 </mule>
