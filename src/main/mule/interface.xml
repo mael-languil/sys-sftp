@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd  http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
-    <http:listener-config name="sys-sftp-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8082" />
-    </http:listener-config>
-    <apikit:config name="sys-sftp-config" api="resource::3b90109e-a38a-4252-ae3a-67ca3e9e3228:sys-sftp:1.2.2:raml:zip:sys-sftp.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="sys-sftp-main">
-        <http:listener config-ref="sys-sftp-httpListenerConfig" path="/api/*">
+        <http:listener path="/api/*" config-ref="HTTP_Listener_config_apikit">
             <http:response statusCode="#[vars.httpStatus default 200]">
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:response>
             <http:error-response statusCode="#[vars.httpStatus default 500]">
-                <http:body>#[payload]</http:body>
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:error-response>
         </http:listener>
         <apikit:router config-ref="sys-sftp-config" />
@@ -96,33 +92,6 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="sys-sftp-console">
-        <http:listener config-ref="sys-sftp-httpListenerConfig" path="/console/*">
-            <http:response statusCode="#[vars.httpStatus default 200]">
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
-            </http:response>
-            <http:error-response statusCode="#[vars.httpStatus default 500]">
-                <http:body>#[payload]</http:body>
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
-            </http:error-response>
-        </http:listener>
-        <apikit:console config-ref="sys-sftp-config" />
-        <error-handler>
-            <on-error-propagate type="APIKIT:NOT_FOUND">
-                <ee:transform doc:name="Transform Message">
-                    <ee:message>
-                        <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{message: "Resource not found"}]]></ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-        </error-handler>
-    </flow>
     <flow name="get:\invoices:sys-sftp-config">
         <flow-ref doc:name="GetInvoices" doc:id="9e2647d6-7790-4480-b85d-64db6b10cb4e" name="GetInvoices" />
         <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
@@ -181,8 +150,8 @@ payload]]></ee:set-payload>
         </error-handler>
     </flow>
     <flow name="get:\products:sys-sftp-config">
-        <set-variable value="#[attributes.queryParams.category]" doc:name="CategoryProduct" doc:id="9be5a54b-94f1-4169-b5ab-04d5591d9cd9" variableName="CategoryProduct"/>
-		<flow-ref doc:name="sub-getProducts" doc:id="fbc9ade6-cceb-49b9-a849-7d01094dacce" name="sub-getProducts" />
+        <set-variable value="#[attributes.queryParams.category]" doc:name="CategoryProduct" doc:id="9be5a54b-94f1-4169-b5ab-04d5591d9cd9" variableName="CategoryProduct" />
+        <flow-ref doc:name="sub-getProducts" doc:id="fbc9ade6-cceb-49b9-a849-7d01094dacce" name="sub-getProducts" />
         <!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
