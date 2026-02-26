@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<sub-flow name="sub-getProducts" doc:id="8e984474-84bd-46f0-b0c1-eb67f40c012d" >
 		<sftp:read doc:name="Read" doc:id="0f4722b3-51ad-492f-8e54-94f938fb1553" config-ref="SFTP_Config_Local" path="products.csv"/>
 		<ee:transform doc:name="CSV to JSON" doc:id="a2bd0c05-24fb-4edf-9658-75eee93e9cb0" >
@@ -85,8 +86,11 @@ var newProduct       = vars.newProduct
 				<sftp:write doc:name="Write" doc:id="119b760d-e687-4f28-a02a-50f79f4849f2" config-ref="SFTP_Config_Local" path="products.csv"/>
 				<logger level="INFO" doc:name="Logger" doc:id="ff82fcaf-2963-49c8-b096-30288039e2fa" />
 			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="abc57718-7df1-4d53-a8a8-88f00607facf" />
+			<otherwise>
+				<set-variable value="1" doc:name="Error" doc:id="745d73a9-1adc-4e4d-ad1e-f65c96a3dbea" variableName="Error"/>
+				<validation:is-null doc:name="Is null" doc:id="fc3b00b3-22d9-4756-a666-6c16e77a3b1a" value="#[vars.Error]">
+					<error-mapping sourceType="VALIDATION:NOT_NULL" targetType="APP:PRODUCT_ALREADY_EXISTS" />
+				</validation:is-null>
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Logger" doc:id="a185e1a0-37bd-418c-925c-77cbc58b1823" />
