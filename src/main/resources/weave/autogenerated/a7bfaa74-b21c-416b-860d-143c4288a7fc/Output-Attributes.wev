@@ -1,0 +1,23 @@
+%dw 2.0
+
+type auto_a7bfaa74_b21c_416b_860d_143c4288a7fc_Output_Attributes = {|
+  clientCertificate?: {|
+    publicKey?: {|  |}, 
+    "type"?: String, 
+    encoded?: Binary
+  |}, 
+  headers: {|  |}, 
+  listenerPath: String, 
+  method: String, 
+  queryParams: {| category?: "Graphisme" | "Sécurité" | "Électronique" | "Audio" | "Accessoire" |}, 
+  queryString: String, 
+  relativePath: String, 
+  remoteAddress: String, 
+  requestPath: String, 
+  requestUri: String, 
+  scheme: String, 
+  uriParams: {| host: String |}, 
+  version: String, 
+  localAddress: String
+|}
+
